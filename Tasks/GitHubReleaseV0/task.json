@@ -38,8 +38,7 @@
             "properties": {
                 "DisableManageLink": "True",
                 "EditableOptions": "True",
-                "IsSearchable": "True",
-                "searchableDataSourceBinding": "userRepositorySearch"
+                "SearchDataSourceName": "userRepositorySearch"
             }
         },
         {
@@ -189,14 +188,12 @@
             "endpointId": "$(gitHubConnection)",
             "dataSourceName": "UserRepositories",
             "resultTemplate": "{ \"Value\" : \"{{full_name}}\", \"DisplayValue\" : \"{{full_name}}\" }",
-            "callbackRequiredTemplate": "{{isTokenContainsSubstring headers.Link rel=\"next\"}}",
-            "callbackContextTemplate": "{\"continuationToken\" : \"{{{headers.x-ms-continuationtoken}}}\"}",
-            "initialContextTemplate": "{\"continuationToken\" : \"{{{system.utcNow}}}\"}"
+            "callbackRequiredTemplate": "{{isTokenContainsSubstring headers.Link rel=\"next\"}}"
           },
           {
             "target": "userRepositorySearch",
             "endpointId": "$(gitHubConnection)",
-            "dataSourceName": "SearchRepositoriesByName",
+            "dataSourceName": "SearchRepositoriesByNameForTasks",
             "resultTemplate": "{ \"Value\" : \"{{full_name}}\", \"DisplayValue\" : \"{{full_name}}\" }",
             "parameters": {
               "searchText": "$(name)"
