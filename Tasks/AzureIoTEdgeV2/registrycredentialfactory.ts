@@ -13,8 +13,8 @@ export class RegistryCredential {
 }
 
 export interface ACRRegistry {
-  id: string,
-  loginServer: string,
+  id: string;
+  loginServer: string;
 }
 
 export class RegistryCredentialFactory {
@@ -31,7 +31,7 @@ export class RegistryCredentialFactory {
     if (!endpointName) {
       throw Error(`endpointName or registryName is empty when fetching Generic credential`);
     }
-    let registryAuth: any = tl.getEndpointAuthorization(endpointName, true).parameters;
+    const registryAuth: any = tl.getEndpointAuthorization(endpointName, true).parameters;
     return new RegistryCredential(registryAuth.username, registryAuth.password, registryAuth.registry);
   }
 }

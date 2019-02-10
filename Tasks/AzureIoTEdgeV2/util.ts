@@ -1,8 +1,8 @@
-import Constants from "./constant";
-import * as tl from "azure-pipelines-task-lib/task";
-import * as crypto from "crypto";
+import * as tl from 'azure-pipelines-task-lib/task';
 import { IExecSyncOptions } from 'azure-pipelines-task-lib/toolrunner';
-import { Writable } from "stream";
+import * as crypto from 'crypto';
+import { Writable } from 'stream';
+import { Constants } from './constant';
 import { RegistryCredential } from './registrycredentialfactory';
 
 interface Cmd {
@@ -11,7 +11,7 @@ interface Cmd {
   execOption: IExecSyncOptions;
 }
 
-export default class Util {
+export class Util {
   public static expandEnv(input: string, ...exceptKeys: string[]): string {
     const pattern: RegExp = new RegExp(/\$([a-zA-Z0-9_]+)|\${([a-zA-Z0-9_]+)}/g);
     const exceptSet: Set<string> = new Set(exceptKeys);
@@ -19,7 +19,7 @@ export default class Util {
       if (exceptKeys && exceptSet.has(matched)) {
         return matched;
       }
-      const key: string = matched.replace(/\$|{|}/g, "");
+      const key: string = matched.replace(/\$|{|}/g, '');
       return process.env[key] || matched;
     });
   }
@@ -28,27 +28,27 @@ export default class Util {
     resourceUri = encodeURIComponent(resourceUri);
 
     // Set expiration in seconds
-    var expires = (Date.now() / 1000) + expiresInMins * 60;
+    let expires = (Date.now() / 1000) + expiresInMins * 60;
     expires = Math.ceil(expires);
-    var toSign = resourceUri + '\n' + expires;
+    const toSign = resourceUri + '\n' + expires;
 
     // Use crypto
-    var hmac = crypto.createHmac('sha256', new Buffer(signingKey, 'base64'));
+    const hmac = crypto.createHmac('sha256', new Buffer(signingKey, 'base64'));
     hmac.update(toSign);
-    var base64UriEncoded = encodeURIComponent(hmac.digest('base64'));
+    const base64UriEncoded = encodeURIComponent(hmac.digest('base64'));
 
     // Construct autorization string
-    var token = "SharedAccessSignature sr=" + resourceUri + "&sig=" +
-      base64UriEncoded + "&se=" + expires;
-    if (policyName) token += "&skn=" + policyName;
+    let token = 'SharedAccessSignature sr=' + resourceUri + '&sig=' +
+      base64UriEncoded + '&se=' + expires;
+    if (policyName) { token += '&skn=' + policyName; }
     return token;
   }
 
   public static findFiles(filepath: string): string[] {
     if (filepath.indexOf('*') >= 0 || filepath.indexOf('?') >= 0) {
-      var buildFolder = tl.cwd();
-      var allFiles = tl.find(buildFolder);
-      var matchingResultsFiles = tl.match(allFiles, filepath, buildFolder, {
+      const buildFolder = tl.cwd();
+      const allFiles = tl.find(buildFolder);
+      const matchingResultsFiles = tl.match(allFiles, filepath, buildFolder, {
         matchBase: true
       });
 
@@ -59,10 +59,10 @@ export default class Util {
   }
 
   public static getModulesContent(templateObject: any): any {
-    if (templateObject.modulesContent != undefined) {
+    if (templateObject.modulesContent !== undefined) {
       return templateObject.modulesContent;
     }
-    if (templateObject.moduleContent != undefined) {
+    if (templateObject.moduleContent !== undefined) {
       return templateObject.moduleContent;
     }
     throw Error(`Property moduleContent or modulesContent can't be found in template`);
@@ -70,9 +70,9 @@ export default class Util {
 
   public static setupIotedgedev(): void {
     try {
-      let result = tl.execSync(`${Constants.iotedgedev}`, `--version`, Constants.execSyncSilentOption);
+      const result = tl.execSync(`${Constants.iotedgedev}`, `--version`, Constants.execSyncSilentOption);
       if (result.code === 0) {
-        console.log(tl.loc('DependencyAlreadyInstalled', Constants.iotedgedev, result.stdout.substring(result.stdout.indexOf("version"))));
+        console.log(tl.loc('DependencyAlreadyInstalled', Constants.iotedgedev, result.stdout.substring(result.stdout.indexOf('version'))));
         return;
       }
     } catch (e) {
@@ -89,17 +89,17 @@ export default class Util {
       cmds = [
         { path: `sudo`, arg: `apt-get update`, execOption: Constants.execSyncSilentOption },
         { path: `sudo`, arg: `apt-get install -y python-setuptools`, execOption: Constants.execSyncSilentOption },
-        { path: `sudo`, arg: `pip install ${Constants.iotedgedev}==${version}`, execOption: Constants.execSyncSilentOption },
-      ]
+        { path: `sudo`, arg: `pip install ${Constants.iotedgedev}==${version}`, execOption: Constants.execSyncSilentOption }
+      ];
     } else if (tl.osType() === Constants.osTypeWindows) {
       cmds = [
-        { path: `pip`, arg: `install ${Constants.iotedgedev}==${version}`, execOption: Constants.execSyncSilentOption },
-      ]
+        { path: `pip`, arg: `install ${Constants.iotedgedev}==${version}`, execOption: Constants.execSyncSilentOption }
+      ];
     }
 
     try {
-      for (let cmd of cmds) {
-        let result = tl.execSync(cmd.path, cmd.arg, cmd.execOption);
+      for (const cmd of cmds) {
+        const result = tl.execSync(cmd.path, cmd.arg, cmd.execOption);
         if (result.code !== 0) {
           tl.debug(result.stderr);
         }
@@ -109,9 +109,9 @@ export default class Util {
       tl.debug(e);
     }
 
-    let result = tl.execSync(`${Constants.iotedgedev}`, `--version`, Constants.execSyncSilentOption);
+    const result = tl.execSync(`${Constants.iotedgedev}`, `--version`, Constants.execSyncSilentOption);
     if (result.code === 0) {
-      console.log(tl.loc('DependencyInstallSuccess', Constants.iotedgedev, result.stdout.substring(result.stdout.indexOf("version"))));
+      console.log(tl.loc('DependencyInstallSuccess', Constants.iotedgedev, result.stdout.substring(result.stdout.indexOf('version'))));
     } else {
       throw Error(tl.loc('DependencyInstallFail', Constants.iotedgedev));
     }
@@ -122,11 +122,11 @@ export default class Util {
     if (tl.osType() === Constants.osTypeWindows) {
       cmd = ['systeminfo', null];
     } else if (tl.osType() === Constants.osTypeLinux) {
-      cmd = [`lsb_release`, `-a`];
+      cmd = ['lsb_release', '-a'];
     }
     if (cmd != null) {
       try {
-        let result = tl.execSync(cmd[0], cmd[1], Constants.execSyncSilentOption);
+        const result = tl.execSync(cmd[0], cmd[1], Constants.execSyncSilentOption);
         tl.debug(`OS is ${result.stdout}`);
       } catch (e) {
         tl.debug(`Error happened when fetching os info: ${e.message}`);
@@ -142,27 +142,27 @@ export default class Util {
   // "zhiqing.azurecr.io","https://zhiqing.azurecr.io" true
   // "zhiqing.azurecr.io","https://zhiqing.azurecr.io/" true
   public static isDockerServerMatch(a: string, b: string): boolean {
-    if (a === b) return true;
-    if (a.includes(Constants.defaultDockerHubHostname) && b.includes(Constants.defaultDockerHubHostname)) return true;
+    if (a === b) { return true; }
+    if (a.includes(Constants.defaultDockerHubHostname) && b.includes(Constants.defaultDockerHubHostname)) { return true; }
 
-    let reg = new RegExp(/^(?:https?:\/\/)?(.*?)\/?$/);
-    let aMatch = reg.exec(a);
-    let bMatch = reg.exec(b);
-    if (aMatch == null || bMatch == null) return false;
+    const reg = new RegExp(/^(?:https?:\/\/)?(.*?)\/?$/);
+    const aMatch = reg.exec(a);
+    const bMatch = reg.exec(b);
+    if (aMatch == null || bMatch == null) { return false; }
     return aMatch[1] === bMatch[1];
   }
 
   // Check if self(task) is included in a build pipeline
   public static checkSelfInBuildPipeline(): boolean {
-    let hostType = tl.getVariable('system.hostType').toLowerCase();
+    const hostType = tl.getVariable('system.hostType').toLowerCase();
     // Set to build if the pipeline is a build. For a release, the values are deployment for a Deployment group job and release for an Agent job.
     return hostType === 'build';
   }
 
   public static createOrAppendDockerCredentials(registryAuthenticationToken: RegistryCredential): void {
-    let creVar = tl.getVariable(Constants.fileNameDockerCredential);
+    const creVar = tl.getVariable(Constants.fileNameDockerCredential);
 
-    let credentials = creVar ? JSON.parse(creVar) : [];
+    const credentials = creVar ? JSON.parse(creVar) : [];
     if (registryAuthenticationToken) {
       credentials.push({
         username: registryAuthenticationToken.username,
@@ -174,9 +174,9 @@ export default class Util {
   }
 
   public static readDockerCredentials(): any[] {
-    let creVar = tl.getVariable(Constants.fileNameDockerCredential);
+    const creVar = tl.getVariable(Constants.fileNameDockerCredential);
 
-    let credentials = creVar ? JSON.parse(creVar) : [];
+    const credentials = creVar ? JSON.parse(creVar) : [];
     return credentials;
   }
 
@@ -197,25 +197,25 @@ export default class Util {
   public static async streamToString(stream: Writable): Promise<string> {
     const chunks = [];
     return new Promise<string>((resolve, reject) => {
-      stream.on('data', chunk => chunks.push(chunk))
-      stream.on('error', reject)
-      stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
+      stream.on('data', chunk => chunks.push(chunk));
+      stream.on('error', reject);
+      stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
     });
   }
 
   public static normalizeDeploymentId(id: string): string {
-    if(id.length > 128) {
+    if (id.length > 128) {
       id = id.substring(0, 128);
     }
     id = id.toLowerCase();
-    let specialCharRegex = /[^a-z0-9\-:\+%_#\*\?!(),=@;']/g;
+    const specialCharRegex = /[^a-z0-9\-:\+%_#\*\?!(),=@;']/g;
     id = id.replace(specialCharRegex, '');
     return id;
   }
 
   // Check if self(task) is in hosted server
   public static checkSelfInHostedServer(): boolean {
-    let serverType = tl.getVariable('System.ServerType').toLowerCase();
+    const serverType = tl.getVariable('System.ServerType').toLowerCase();
     if (!serverType || serverType.toLowerCase() !== 'hosted') {
       return false;
     }
